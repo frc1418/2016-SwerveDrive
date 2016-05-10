@@ -19,7 +19,8 @@ def test_rotate_positions(hal_data):
         (0, -100, 80, -1),
         (90, -50, 130, -1),
         (-150, 90, -90, -1),
-        (-150, 215, -145, 1)
+        (-150, 215, -145, 1),
+        (-179, 0, 180, -1)
         ]
         
     for start_angle, goto_angle, expected_end_angle, expected_mag in test:
