@@ -12,7 +12,10 @@ class SwerveModule:
         self.rotateMotor = rotateMotor
         self.rotateMotor.changeControlMode(wpilib.CANTalon.ControlMode.Position)
         self.rotateMotor.setFeedbackDevice(wpilib.CANTalon.FeedbackDevice.AnalogEncoder)
-    
+        
+        self.magnitude = 0
+        self.angle = 0
+        
     def drive(self, mag, ang):
         target_angle = ang
         
@@ -24,8 +27,13 @@ class SwerveModule:
             mag*=-1 #Reverse wheel direction
         target_angle = SwerveModule.bind(target_angle) #Put in range -180, 180
         
-        self.driveMotor.set(mag)
-        self.rotateMotor.set(SwerveModule.deg_to_ticks(target_angle))
+    
+    def zero(self):
+        self.angle = 0
+    
+    def execute(self):
+        self.rotateMotor.set(SwerveModule.deg_to_ticks(self.angle))
+        self.driveMotor.set(self.magnitude)
     
     @staticmethod
     def deg_to_ticks(angle):

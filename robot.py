@@ -3,8 +3,11 @@
 import wpilib
 import magicbot
 from components.swervemodule import SwerveModule
+from components.drive import Drive
 
 class MyRobot(magicbot.MagicRobot):
+    
+    drive = Drive
     
     
     def createObjects(self):
