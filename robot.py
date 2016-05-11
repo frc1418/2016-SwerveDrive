@@ -23,6 +23,7 @@ class MyRobot(magicbot.MagicRobot):
         
         self.drive_modules = [self.lf_module, self.lr_module, self.rf_module, self.rr_module]
         
+        self.navX = navx.AHRS.create_spi()
         
 if __name__ == '__main__':
     wpilib.run(MyRobot)
