@@ -1,5 +1,6 @@
 import wpilib
 
+
 class SwerveModule:
     
     def __init__(self, driveMotor, rotateMotor):
@@ -16,6 +17,9 @@ class SwerveModule:
         self.magnitude = 0
         self.angle = 0
         
+    def zero(self):
+        self.angle = 0   
+        
     def drive(self, mag, ang):
         target_angle = ang
         
@@ -27,9 +31,11 @@ class SwerveModule:
             mag*=-1 #Reverse wheel direction
         target_angle = SwerveModule.bind(target_angle) #Put in range -180, 180
         
+        self.angle = target_angle
+        self.magnitude = mag
+        self.execute()
+        
     
-    def zero(self):
-        self.angle = 0
     
     def execute(self):
         self.rotateMotor.set(SwerveModule.deg_to_ticks(self.angle))

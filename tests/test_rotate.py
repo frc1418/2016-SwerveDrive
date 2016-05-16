@@ -2,6 +2,7 @@ import wpilib
 
 from components.swervemodule import SwerveModule
 
+
 def test_rotate_positions(hal_data):
     print("Starting Test")
     rotate_motor = wpilib.CANTalon(5)
@@ -29,6 +30,7 @@ def test_rotate_positions(hal_data):
         assert rotate_motor.get() == SwerveModule.deg_to_ticks(start_angle)
         
         module.drive(1, goto_angle)
+        module.execute()
         
         assert can['value']== SwerveModule.deg_to_ticks(expected_end_angle)
         assert drive_motor.get()==expected_mag
