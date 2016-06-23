@@ -23,12 +23,12 @@ class SwerveModule:
         
         self.encoder_zero = 0
         
-        self.pid_controller = wpilib.PIDController(0.0001, 0.001, 0.0, self.encoder, self.rotateMotor)
-        self.pid_controller.setTolerance(20)
-        self.pid_controller.setContinuous()
+        self.pid_controller = wpilib.PIDController(0.1, 0.0, 0.0, self.encoder, self.rotateMotor)
+        #self.pid_controller.setTolerance(5)
+        #self.pid_controller.setContinuous()
         self.pid_controller.enable()
         
-        self.requested_voltage = 0;
+        self.requested_voltage = 0
         
         self.zero_encoder()
     
@@ -65,18 +65,20 @@ class SwerveModule:
         '''
         if(abs(value - self.get_degrees()) > 90):
             value -= 180'''
-        self.requested_voltage = self.deg_to_voltage(value)
+        self.sd.putNumber('drive/%s/ Requested D' % self.sd_prefix, value)
+        self.requested_voltage = ((self.deg_to_voltage(value)+self.encoder_zero) % 5)
     
     def doit(self):
         self.pid_controller.setSetpoint(self.requested_voltage)
         self.update_smartdash()
     
     def update_smartdash(self):
-        self.sd.putNumber("drive/%s | Requested Voltage" % self.sd_prefix, self.requested_voltage)
-        self.sd.putNumber("drive/%s | Voltage" % self.sd_prefix, self.encoder.getVoltage())
-        self.sd.putNumber("drive/%s | Tick " % self.sd_prefix, self.encoder.getValue())
-        self.sd.putNumber("drive/%s | Degrees" % self.sd_prefix, self.get_degrees())
-        self.sd.putNumber("drive/%s | Degrees" % self.sd_prefix, self.pid_controller.onTarget())
+        self.sd.putNumber("drive/%s/ Requested Voltage" % self.sd_prefix, self.requested_voltage)
+        self.sd.putNumber("drive/%s/ Voltage" % self.sd_prefix, self.encoder.getVoltage())
+        self.sd.putNumber("drive/%s/ Tick " % self.sd_prefix, self.encoder.getValue())
+        self.sd.putNumber("drive/%s/ Zero " % self.sd_prefix, self.encoder_zero)
+        self.sd.putNumber("drive/%s/ Degrees" % self.sd_prefix, self.get_degrees())
+        #self.sd.putBoolean("drive/%s/ On Target" % self.sd_prefix, self.pid_controller.onTarget())
         
         
         

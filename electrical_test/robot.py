@@ -15,7 +15,7 @@ class MyRobot(wpilib.SampleRobot):
         self.rr_module = SwerveModule(3,2,3, SDPrefix="RR Module")
         self.lr_module = SwerveModule(7,6,1, SDPrefix="LR Module")
         self.rf_module = SwerveModule(4,5,2, SDPrefix="RF Module")
-        self.lf_module = SwerveModule(1,0,0, SDPrefix="LR Module")
+        self.lf_module = SwerveModule(1,0,0, SDPrefix="LF Module")
         
         '''
         self.lr_encoder = wpilib.AnalogInput(1)
@@ -57,12 +57,13 @@ class MyRobot(wpilib.SampleRobot):
                 self.sd.putNumber('Encoder Voltage #%s' % i, encoder.getVoltage())
             '''
             
-            self.wheel_rotation += self.joystick.getAxis(0);
+            self.wheel_rotation = self.joystick.getAxis(0)*180;
             
             self.rr_module.set_deg(self.wheel_rotation)
             self.lr_module.set_deg(self.wheel_rotation)
             self.rf_module.set_deg(self.wheel_rotation)
             self.lf_module.set_deg(self.wheel_rotation)
+            
             
             self.update()
             wpilib.Timer.delay(0.005)
