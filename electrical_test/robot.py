@@ -12,10 +12,12 @@ class MyRobot(wpilib.SampleRobot):
         self.encoders = [];
         
         #driveMotorPort, rotateMotorPort, encoderPort
-        self.rr_module = SwerveModule(3,2,3, SDPrefix="RR Module")
-        self.lr_module = SwerveModule(7,6,1, SDPrefix="LR Module")
-        self.rf_module = SwerveModule(4,5,2, SDPrefix="RF Module")
-        self.lf_module = SwerveModule(1,0,0, SDPrefix="LF Module")
+        self.rr_module = SwerveModule(wpilib.VictorSP(2),wpilib.Talon(3),3, SDPrefix="RR Module", zero=0.83)
+        self.lr_module = SwerveModule(wpilib.VictorSP(7),wpilib.VictorSP(6),1, SDPrefix="LR Module", zero=2.24)
+        self.lf_module = SwerveModule(wpilib.VictorSP(4),wpilib.VictorSP(5),0, SDPrefix="LF Module", zero=3.18)
+        self.rf_module = SwerveModule(wpilib.VictorSP(1),wpilib.VictorSP(0),2, SDPrefix="RF Module", zero=2.16)
+        
+        self.turret_motor = wpilib.Talon(8)
         
         '''
         self.lr_encoder = wpilib.AnalogInput(1)
@@ -38,7 +40,8 @@ class MyRobot(wpilib.SampleRobot):
             'rr_module': self.rr_module,
         }
         
-        self.joystick = wpilib.Joystick(0)
+        self.joystick1 = wpilib.Joystick(0)
+        self.joystick2 = wpilib.Joystick(1)
         self.wheel_rotation = 0
         
         '''
@@ -46,7 +49,11 @@ class MyRobot(wpilib.SampleRobot):
             self.encoders.append(wpilib.AnalogInput(i))'''
     
     def disabled(self):
-        wpilib.Timer.delay(.01)
+        while not self.isEnabled():
+            for component in self.components.values():
+                component.update_smartdash()
+            
+            wpilib.Timer.delay(0.1)
         
     def operatorControl(self):
         while self.isOperatorControl() and self.isEnabled():
@@ -57,7 +64,9 @@ class MyRobot(wpilib.SampleRobot):
                 self.sd.putNumber('Encoder Voltage #%s' % i, encoder.getVoltage())
             '''
             
-            self.wheel_rotation = self.joystick.getAxis(0)*180;
+            self.wheel_rotation = self.joystick1.getAxis(0)*180;
+            
+            self.turret_motor.setSpeed(self.joystick2.getAxis(0))
             
             self.rr_module.set_deg(self.wheel_rotation)
             self.lr_module.set_deg(self.wheel_rotation)

@@ -7,30 +7,31 @@ MAX_DEG = 360
 
 class SwerveModule:
     
-    def __init__(self, driveMotorPort, rotateMotorPort, encoderPort, SDPrefix="SwerveModule"):
+    def __init__(self, driveMotor, rotateMotor, encoderPort, SDPrefix="SwerveModule", zero=0.0):
         '''
-        :param driveMotorPort: pwm port number of VictorSP Motor
-        :param rotateMotorPort: pwm port number of VictorSP Motor
+        :param driveMotorPort: Motor object
+        :param rotateMotorPort: Motor object
         :param encoderPort: analog in port number of Absolute Encoder
         '''
         
         self.sd = NetworkTable.getTable('SmartDashboard')
         self.sd_prefix = SDPrefix
         
-        self.driveMotor = wpilib.VictorSP(driveMotorPort)
-        self.rotateMotor = wpilib.VictorSP(rotateMotorPort)
+        self.driveMotor = driveMotor
+        self.rotateMotor = rotateMotor
         self.encoder = wpilib.AnalogInput(encoderPort)
         
         self.encoder_zero = 0
         
-        self.pid_controller = wpilib.PIDController(0.1, 0.0, 0.0, self.encoder, self.rotateMotor)
+        self.pid_controller = wpilib.PIDController(0.4, 0.0, 0.0, self.encoder, self.rotateMotor)
         #self.pid_controller.setTolerance(5)
-        #self.pid_controller.setContinuous()
+        self.pid_controller.setContinuous()
+        self.pid_controller.setInputRange(0.0, 5.0)
         self.pid_controller.enable()
         
         self.requested_voltage = 0
         
-        self.zero_encoder()
+        self.encoder_zero = zero
     
     def get_degrees(self):
         volt =  (self.encoder.getVoltage() - self.encoder_zero)
@@ -69,6 +70,7 @@ class SwerveModule:
         self.requested_voltage = ((self.deg_to_voltage(value)+self.encoder_zero) % 5)
     
     def doit(self):
+        #if(r)
         self.pid_controller.setSetpoint(self.requested_voltage)
         self.update_smartdash()
     
@@ -78,6 +80,8 @@ class SwerveModule:
         self.sd.putNumber("drive/%s/ Tick " % self.sd_prefix, self.encoder.getValue())
         self.sd.putNumber("drive/%s/ Zero " % self.sd_prefix, self.encoder_zero)
         self.sd.putNumber("drive/%s/ Degrees" % self.sd_prefix, self.get_degrees())
+        
+        self.sd.putNumber("drive/%s/ PID GET" % self.sd_prefix, self.pid_controller.get())
         #self.sd.putBoolean("drive/%s/ On Target" % self.sd_prefix, self.pid_controller.onTarget())
         
         
