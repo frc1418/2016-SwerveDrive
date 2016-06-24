@@ -71,9 +71,10 @@ class SwerveModule:
         self.requested_voltage = ((self.deg_to_voltage(value)+self.encoder_zero) % 5)
     
     def move(self, speed, deg):
+        '''
         if abs(deg - self.get_degrees()) > 90:
             deg +=180
-            speed *= -1
+            speed *= -1'''
         
         self.requested_speed = speed
         self._set_deg(deg)

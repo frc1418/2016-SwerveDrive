@@ -1,13 +1,14 @@
-
 import math
+from networktables import NetworkTable
+
 
 from robotpy_ext.common_drivers import navx
 
 class SwerveDrive:
     
     def __init__(self, rr_module, rl_module, fr_module, fl_module, navx, gyroCalc = False):
-        
-        self.modules = [fl_module,fr_module,rl_module,rr_module]
+        self.sd = NetworkTable.getTable('SmartDashboard')
+        self.modules = [fr_module,fl_module,rl_module,rr_module]
         self.module_speeds = [0,0,0,0]
         self.module_angles = [0,0,0,0]
         
@@ -29,22 +30,26 @@ class SwerveDrive:
     
     def move(self, fwd, strafe, rcw):
         #Velocities per quadrant
-        leftY = fwd + (rcw * (self.width / self.r))
-        rightY = fwd - (rcw * (self.width / self.r))
+        leftY = fwd - (rcw * (self.width / self.r))
+        rightY = fwd + (rcw * (self.width / self.r))
         frontX = strafe + (rcw * (self.length / self.r))
         rearX = strafe - (rcw * (self.length / self.r))
         
         fr_speed = math.sqrt((rightY ** 2) + (frontX ** 2))
-        fr_angle = math.degrees(math.atan2(rightY, frontX))
+        fr_angle = math.degrees(math.atan2(frontX, rightY))
+        #fr_angle = math.degrees(math.atan2(rightY, frontX))
         
         fl_speed = math.sqrt((leftY ** 2) + (frontX ** 2))
-        fl_angle = math.degrees(math.atan2(leftY, frontX))
+        fl_angle = math.degrees(math.atan2(frontX, leftY))
+        #fl_angle = math.degrees(math.atan2(leftY, frontX))
         
         rl_speed = math.sqrt((leftY ** 2) + (rearX ** 2))
-        rl_angle = math.degrees(math.atan2(leftY, rearX))
+        rl_angle = math.degrees(math.atan2(rearX, leftY))
+        #rl_angle = math.degrees(math.atan2(leftY, rearX))
         
         rr_speed = math.sqrt((rightY ** 2) + (rearX ** 2))
-        rr_angle = math.degrees(math.atan2(rightY, rearX))
+        rr_angle = math.degrees(math.atan2(rearX, rightY))
+        #rr_angle = math.degrees(math.atan2(rightY, rearX))
         
         self.module_speeds = [fr_speed, fl_speed, rl_speed, rr_speed]
         self.module_angles = [fr_angle, fl_angle, rl_angle, rr_angle]
@@ -59,6 +64,8 @@ class SwerveDrive:
                 self.module_speeds[i] = speed / max_speed
     
     def doit(self):
+        self.update_smartdash()
+            
         for i, module in enumerate(self.modules):
             module.move(self.module_speeds[i], self.module_angles[i])
         self.module_speeds = [0,0,0,0]
@@ -68,6 +75,9 @@ class SwerveDrive:
             module.doit()
     
     def update_smartdash(self):
+        for i, angle in enumerate(self.module_angles):
+            self.sd.putNumber("drive/drive/ Angle %s" % i, angle)
+        
         for module in self.modules:
             module.update_smartdash()
         

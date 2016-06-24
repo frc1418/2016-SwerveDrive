@@ -14,10 +14,10 @@ class MyRobot(wpilib.SampleRobot):
         self.navX = navx.AHRS.create_spi()
         
         #driveMotorPort, rotateMotorPort, encoderPort
-        self.rr_module = SwerveModule(wpilib.VictorSP(2),wpilib.Talon(3),3, SDPrefix="RR Module", zero=0.83)
-        self.rl_module = SwerveModule(wpilib.VictorSP(7),wpilib.VictorSP(6),1, SDPrefix="RL Module", zero=3.86, inverted=True)
-        self.fl_module = SwerveModule(wpilib.VictorSP(4),wpilib.VictorSP(5),0, SDPrefix="FL Module", zero=3.24, inverted=True)
-        self.fr_module = SwerveModule(wpilib.VictorSP(1),wpilib.VictorSP(0),2, SDPrefix="FR Module", zero=4.64)
+        self.rr_module = SwerveModule(wpilib.VictorSP(2),wpilib.Talon(3),3, SDPrefix="RR Module", zero=3.3, inverted=True)
+        self.rl_module = SwerveModule(wpilib.VictorSP(7),wpilib.VictorSP(6),1, SDPrefix="RL Module", zero=4.63)
+        self.fl_module = SwerveModule(wpilib.VictorSP(4),wpilib.VictorSP(5),0, SDPrefix="FL Module", zero=0.79)
+        self.fr_module = SwerveModule(wpilib.VictorSP(1),wpilib.VictorSP(0),2, SDPrefix="FR Module", zero=2.15, inverted=True)
         
         #rr_module, rl_module, fr_module, fl_module, navx, gyroCalc = False
         self.drive = SwerveDrive(self.rr_module, self.rl_module, self.fr_module, self.fl_module, self.navX)
@@ -42,9 +42,9 @@ class MyRobot(wpilib.SampleRobot):
     def operatorControl(self):
         while self.isOperatorControl() and self.isEnabled():
             
-            self.turret_motor.setSpeed(self.joystick2.getAxis(0))
+            #self.turret_motor.setSpeed(self.joystick2.getAxis(0))
             
-            self.drive.move(self.joystick1.getAxis(1), self.joystick1.getAxis(0), self.joystick2.getAxis(0))
+            self.drive.move(self.joystick1.getAxis(1)*-1, self.joystick1.getAxis(0)*-1, self.joystick2.getAxis(0)*-1)
             
             self.update()
             wpilib.Timer.delay(0.005)
