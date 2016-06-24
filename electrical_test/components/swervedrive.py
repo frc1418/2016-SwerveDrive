@@ -27,12 +27,12 @@ class SwerveDrive:
         
         self.r = math.sqrt((self.length * self.length)+(self.width + self.width))
     
-    def move(self, fwd, str, rcw):
+    def move(self, fwd, strafe, rcw):
         #Velocities per quadrant
         leftY = fwd + (rcw * (self.width / self.r))
         rightY = fwd - (rcw * (self.width / self.r))
-        frontX = str + (rcw * (self.length / self.r))
-        rearX = str - (rcw * (self.length / self.r))
+        frontX = strafe + (rcw * (self.length / self.r))
+        rearX = strafe - (rcw * (self.length / self.r))
         
         fr_speed = math.sqrt((rightY ** 2) + (frontX ** 2))
         fr_angle = math.degrees(math.atan2(rightY, frontX))
@@ -62,7 +62,7 @@ class SwerveDrive:
         for i, module in enumerate(self.modules):
             module.move(self.module_speeds[i], self.module_angles[i])
         self.module_speeds = [0,0,0,0]
-        self.module_angles = [0,0,0,0]
+        #self.module_angles = [0,0,0,0] 
         
         for module in self.modules:
             module.doit()
