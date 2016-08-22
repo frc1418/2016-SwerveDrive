@@ -47,6 +47,18 @@ class SwerveDrive:
         :param strafe: the requested movement in the X direction of the 2D plan
         :param rcw: the requestest magnatude of the rotational vector of a 2D plan
         '''
+        
+        if(self.gyro_calc):
+            #TODO: verify that gyro needs to be converted
+            theta = math.radians(self.navx.yaw())
+            
+            fwdX = fwd * math.cos(theta)
+            fwdY = (-fwd) * math.cos(theta) #TODO: verify and understand why fwd is neg
+            strafeX = strafe * math.cos(theta)
+            strafeY = strafe * math.sin(theta)
+            
+            fwd = fwdX + strafeY
+            strafe = fwdY + strafeX
 
         #Velocities per quadrant
         leftY = fwd - (rcw * (self.width / self.r))
