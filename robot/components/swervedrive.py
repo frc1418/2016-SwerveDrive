@@ -16,7 +16,7 @@ class SwerveDrive:
         self.navx = navx
 
         #Square chasis
-        self.set_chasis_deminsions(1, 1)
+        self.set_chasis_deminsions(22.5, 18)
         
         self.max_drive_speed = self.sd.getAutoUpdateValue("drive/drive/MaxDriveSpeed", 1)
         self.lower_drive_tresh = self.sd.getAutoUpdateValue("drive/drive/LowDriveThresh", 0.1)
@@ -108,7 +108,6 @@ class SwerveDrive:
         '''
         Pushes some interal variables for debugging.
         '''
-        self.sd.putBoolean("drive/drive/GyroCalc", self.gyro_calc)
         self.sd.putNumber("drive/driveGyroAngle", self.navx.yaw)
         
         #self.sd.putNumber("drive/drive/MaxDriveSpeed", self.max_drive_speed)
