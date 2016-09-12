@@ -6,7 +6,7 @@ from robotpy_ext.common_drivers import navx
 
 class SwerveDrive:
 
-    def __init__(self, rr_module, rl_module, fr_module, fl_module, navx, gyroCalc = False):
+    def __init__(self, rr_module, rl_module, fr_module, fl_module, navx, field_centric = False):
         self.sd = NetworkTable.getTable('SmartDashboard')
 
         self.modules = [fr_module,fl_module,rl_module,rr_module]
@@ -14,6 +14,8 @@ class SwerveDrive:
         self.module_angles = [0,0,0,0]
         
         self.navx = navx
+        
+        self.field_centric = field_centric
 
         #Square chasis
         self.set_chasis_deminsions(22.5, 18)
@@ -34,6 +36,14 @@ class SwerveDrive:
 
         self.r = math.sqrt((self.length * self.length)+(self.width + self.width))
 
+    def set_field_centric(self, value):
+        if value:
+            self.navx.reset()
+        self.field_centric = value
+        
+    def is_field_centric(self):
+        return self.field_centric
+
     def move(self, fwd, strafe, rcw):
         '''
         Calulates the speed and angle for each wheel given the requested movement
@@ -45,18 +55,16 @@ class SwerveDrive:
         fwd *= self.xy_multiplyer.value
         rcw *= self.rotation_multiplyer.value
         
-        if(self.gyro_calc):
-            #TODO: verify that gyro needs to be converted
-            theta = math.radians(self.navx.yaw())
+        if(self.field_centric):
+            theta = math.radians(360-self.navx.yaw)
             
             fwdX = fwd * math.cos(theta)
-            fwdY = (-fwd) * math.cos(theta) #TODO: verify and understand why fwd is neg
+            fwdY = (-fwd) * math.sin(theta) #TODO: verify and understand why fwd is neg
             strafeX = strafe * math.cos(theta)
             strafeY = strafe * math.sin(theta)
             
             fwd = fwdX + strafeY
             strafe = fwdY + strafeX
-        
 
         #Velocities per quadrant
         leftY = fwd - (rcw * (self.width / self.r))
@@ -121,7 +129,8 @@ class SwerveDrive:
         '''
         Pushes some interal variables for debugging.
         '''
-        self.sd.putNumber("drive/driveGyroAngle", self.navx.yaw)
+        self.sd.putNumber("drive/drive/GyroAngle", self.navx.yaw)
+        self.sd.putBoolean("drive/drive/FieldCentric", self.field_centric)
         
         #self.sd.putNumber("drive/drive/MaxDriveSpeed", self.max_drive_speed)
         

@@ -3,6 +3,8 @@ from networktables import NetworkTable
 
 from components.swervemodule import SwerveModule
 from components.swervedrive import SwerveDrive
+from robotpy_ext.control.button_debouncer import ButtonDebouncer
+
 
 from robotpy_ext.common_drivers import navx
 
@@ -27,6 +29,9 @@ class MyRobot(wpilib.SampleRobot):
         #Initalization of the SwerveDrive class that will handle movement calulations
         self.drive = SwerveDrive(self.rr_module, self.rl_module, self.fr_module, self.fl_module, self.navX)
         
+        #Operation Buttons
+        self.field_centric_button = ButtonDebouncer(self.joystick1, 6)
+        
         #Creation of components list to iterate over during update phase
         self.components = {
             'swerve_drive': self.drive
@@ -45,6 +50,10 @@ class MyRobot(wpilib.SampleRobot):
             #Passing joystick axis values to drive function
             self.drive.move(self.joystick1.getAxis(1)*-1, self.joystick1.getAxis(0)*-1, self.joystick2.getAxis(0)*-1)
 
+            if self.field_centric_button.get():
+                self.drive.set_field_centric(not self.drive.is_field_centric())
+
+            #TODO: Fix up the turret code a bit
             if self.joystick1.getRawButton(4):
                 self.turret_motor.set(-self.joystick1.getAxis(2))
             elif self.joystick1.getRawButton(5):
