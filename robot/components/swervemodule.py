@@ -126,6 +126,7 @@ class SwerveModule:
         Outputs a bunch on internal variables for debuging purposes.
         '''
         self.sd.putNumber("drive/%s/ Requested Voltage" % self.sd_prefix, self.requested_voltage)
+        self.sd.putNumber("drive/%s/ Requested Speed" % self.sd_prefix, self.requested_speed)
         self.sd.putNumber("drive/%s/ Voltage" % self.sd_prefix, self.encoder.getVoltage())
         self.sd.putNumber("drive/%s/ Tick " % self.sd_prefix, self.encoder.getValue())
         self.sd.putNumber("drive/%s/ Zero " % self.sd_prefix, self.encoder_zero)
