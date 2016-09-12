@@ -16,18 +16,13 @@ class SwerveDrive:
         self.navx = navx
 
         #Square chasis
-        self.set_chasis_deminsions(1, 1)
-
-        self.gyro_calc = gyroCalc
-
-    def set_gyro_calc(self, value):
-        '''
-        Sets weather or not the gyro centric code will be used
-
-        TODO: Implment gyro centric code
-        '''
-
-        self.gyro_calc = value
+        self.set_chasis_deminsions(22.5, 18)
+        
+        self.max_drive_speed = self.sd.getAutoUpdateValue("drive/drive/MaxDriveSpeed", 1)
+        self.lower_drive_tresh = self.sd.getAutoUpdateValue("drive/drive/LowDriveThresh", 0.1)
+        
+        self.rotation_multiplyer = self.sd.getAutoUpdateValue("drive/drive/RotationMultiplyer", 0.75)
+        self.xy_multiplyer = self.sd.getAutoUpdateValue("drive/drive/XYMultiplyer", 1)
 
     def set_chasis_deminsions(self, length, width):
         '''
@@ -42,11 +37,13 @@ class SwerveDrive:
     def move(self, fwd, strafe, rcw):
         '''
         Calulates the speed and angle for each wheel given the requested movement
-
         :param fwd: the requested movement in the Y direction 2D plan
         :param strafe: the requested movement in the X direction of the 2D plan
         :param rcw: the requestest magnatude of the rotational vector of a 2D plan
         '''
+        
+        fwd *= self.xy_multiplyer.value
+        rcw *= self.rotation_multiplyer.value
 
         #Velocities per quadrant
         leftY = fwd - (rcw * (self.width / self.r))
@@ -68,17 +65,29 @@ class SwerveDrive:
         rr_angle = math.degrees(math.atan2(rearX, rightY))
 
         #Assigns the speeds and angles in lists. MUST BE IN THIS ORDER
-        self.module_speeds = [fr_speed, fl_speed, rl_speed, rr_speed]
-        self.module_angles = [fr_angle, fl_angle, rl_angle, rr_angle]
+        requested_module_speeds = [fr_speed, fl_speed, rl_speed, rr_speed]
+        requested_module_angles = [fr_angle, fl_angle, rl_angle, rr_angle]
 
-        #If any speeds are over 1 it normalizes them.
+        #Finds the current max speed
         max_speed = 0
-        for speed in self.module_speeds:
+        for speed in requested_module_speeds:
             if speed > max_speed:
                 max_speed = speed
-        if max_speed > 1:
-            for i, speed in enumerate(self.module_speeds):
-                self.module_speeds[i] = speed / max_speed
+        
+        #Normalises values if any speed is greater then the max   
+        if max_speed > self.max_drive_speed.value:
+            precent_over = (max_speed-self.max_drive_speed.value)/max_speed
+            precent_held = 1-precent_over
+            
+            max_speed *= precent_held
+            
+            for i, speed in enumerate(requested_module_speeds):
+                requested_module_speeds[i] = speed * precent_held
+            
+        #Only puts values is the max speed is over the drive thresh. Used to elminate unneeded wheel movement   
+        if max_speed > self.lower_drive_tresh.value:     
+            self.module_speeds = requested_module_speeds
+            self.module_angles = requested_module_angles
 
     def doit(self):
         '''
@@ -99,6 +108,10 @@ class SwerveDrive:
         '''
         Pushes some interal variables for debugging.
         '''
+        self.sd.putNumber("drive/driveGyroAngle", self.navx.yaw)
+        
+        #self.sd.putNumber("drive/drive/MaxDriveSpeed", self.max_drive_speed)
+        
         for i, angle in enumerate(self.module_angles):
             self.sd.putNumber("drive/drive/ Angle %s" % i, angle)
 
