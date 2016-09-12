@@ -67,3 +67,6 @@ target/
 #Eclipse
 .project
 .pydevproject
+
+#Deploy Config
+*.deploy_cfg*
