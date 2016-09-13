@@ -6,7 +6,7 @@ from robotpy_ext.common_drivers import navx
 
 class SwerveDrive:
 
-    def __init__(self, rr_module, rl_module, fr_module, fl_module, navx, gyroCalc = False):
+    def __init__(self, rr_module, rl_module, fr_module, fl_module, navx, gyroCalc = False, allow_reverse=False):
         self.sd = NetworkTable.getTable('SmartDashboard')
 
         self.modules = [fr_module,fl_module,rl_module,rr_module]
@@ -15,7 +15,6 @@ class SwerveDrive:
         
         self.navx = navx
 
-        #Square chasis
         self.set_chasis_deminsions(22.5, 18)
         
         self.max_drive_speed = self.sd.getAutoUpdateValue("drive/drive/MaxDriveSpeed", 1)
@@ -23,6 +22,8 @@ class SwerveDrive:
         
         self.rotation_multiplyer = self.sd.getAutoUpdateValue("drive/drive/RotationMultiplyer", 0.75)
         self.xy_multiplyer = self.sd.getAutoUpdateValue("drive/drive/XYMultiplyer", 1)
+        
+        self.allow_reverse = allow_reverse
 
     def set_chasis_deminsions(self, length, width):
         '''
@@ -33,6 +34,15 @@ class SwerveDrive:
         self.width = width
 
         self.r = math.sqrt((self.length * self.length)+(self.width + self.width))
+
+    def set_allow_reverse(self, value):
+        self.allow_reverse = value
+        
+        for module in self.modules:
+            module.set_allow_reverse(self.allow_reverse)
+        
+    def get_allow_reverse(self, value):
+        return self.allow_reverse
 
     def move(self, fwd, strafe, rcw):
         '''

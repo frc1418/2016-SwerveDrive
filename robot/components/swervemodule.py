@@ -9,7 +9,7 @@ MAX_DEG = 360
 
 class SwerveModule:
 
-    def __init__(self, driveMotor, rotateMotor, encoderPort, SDPrefix="SwerveModule", zero=0.0, inverted=False):
+    def __init__(self, driveMotor, rotateMotor, encoderPort, SDPrefix="SwerveModule", zero=0.0, inverted=False, allow_reverse=False):
         '''
         :param driveMotorPort: Motor object
         :param rotateMotorPort: Motor object
@@ -27,6 +27,7 @@ class SwerveModule:
 
         self.encoder_zero = 0
 
+        #PID
         self.pid_controller = wpilib.PIDController(1.2, 0.0, 0.0, self.encoder, self.rotateMotor)
         #self.pid_controller.setTolerance(5)
         self.pid_controller.setContinuous()
@@ -37,6 +38,8 @@ class SwerveModule:
         self.requested_speed = 0
 
         self.encoder_zero = zero
+        
+        self.allow_reverse = allow_reverse
 
     #TEST THIS MAY BE BROKEN (VOLT/4050)
     def get_degrees(self):
@@ -45,7 +48,7 @@ class SwerveModule:
         '''
 
         volt =  (self.encoder.getVoltage() - self.encoder_zero)
-        deg = (volt/4050)*360
+        deg = (volt/5)*360
         deg = deg
 
         if deg < 0:
@@ -92,13 +95,15 @@ class SwerveModule:
         '''
 
         self.encoder_zero = self.encoder.getVoltage()
+        
+    def set_allow_reverse(self, value):
+        self.allow_reverse = value
 
     def _set_deg(self, value):
         '''
         Rounds the value to within 360. Sets the requested rotate position (requested voltage).
         Ment to be used only by the move function.
         '''
-        value = value % 360
         self.sd.putNumber('drive/%s/ Requested D' % self.sd_prefix, value)
         self.requested_voltage = ((self.deg_to_voltage(value)+self.encoder_zero) % 5)
 
@@ -106,6 +111,15 @@ class SwerveModule:
         '''
         Sets the requested speed and roation of passed
         '''
+        
+        deg = deg % 360 #Prevents values past 360
+        
+        if self.allow_reverse:
+            if abs(deg - self.get_degrees()) > 90:
+                speed *= -1
+                deg += 180
+                
+                deg = deg % 360 
 
         self.requested_speed = speed
         self._set_deg(deg)
@@ -128,7 +142,6 @@ class SwerveModule:
         self.sd.putNumber("drive/%s/ Requested Voltage" % self.sd_prefix, self.requested_voltage)
         self.sd.putNumber("drive/%s/ Requested Speed" % self.sd_prefix, self.requested_speed)
         self.sd.putNumber("drive/%s/ Voltage" % self.sd_prefix, self.encoder.getVoltage())
-        self.sd.putNumber("drive/%s/ Tick " % self.sd_prefix, self.encoder.getValue())
         self.sd.putNumber("drive/%s/ Zero " % self.sd_prefix, self.encoder_zero)
         self.sd.putNumber("drive/%s/ Degrees" % self.sd_prefix, self.get_degrees())
 
