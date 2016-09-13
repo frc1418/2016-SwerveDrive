@@ -6,7 +6,7 @@ from robotpy_ext.common_drivers import navx
 
 class SwerveDrive:
 
-    def __init__(self, rr_module, rl_module, fr_module, fl_module, navx, field_centric = False):
+    def __init__(self, rr_module, rl_module, fr_module, fl_module, navx, field_centric = False, allow_reverse = False, debugging = False):
         self.sd = NetworkTable.getTable('SmartDashboard')
 
         self.modules = [fr_module,fl_module,rl_module,rr_module]
@@ -16,8 +16,9 @@ class SwerveDrive:
         self.navx = navx
         
         self.field_centric = field_centric
+        self.allow_reverse = allow_reverse
+        self.debugging = debugging
 
-        #Square chasis
         self.set_chasis_deminsions(22.5, 18)
         
         self.max_drive_speed = self.sd.getAutoUpdateValue("drive/drive/MaxDriveSpeed", 1)
@@ -25,6 +26,7 @@ class SwerveDrive:
         
         self.rotation_multiplyer = self.sd.getAutoUpdateValue("drive/drive/RotationMultiplyer", 0.75)
         self.xy_multiplyer = self.sd.getAutoUpdateValue("drive/drive/XYMultiplyer", 1)
+
 
     def set_chasis_deminsions(self, length, width):
         '''
@@ -36,6 +38,15 @@ class SwerveDrive:
 
         self.r = math.sqrt((self.length * self.length)+(self.width + self.width))
 
+    def set_allow_reverse(self, value):
+        self.allow_reverse = value
+        
+        for module in self.modules:
+            module.set_allow_reverse(self.allow_reverse)
+        
+    def is_allow_reverse(self):
+        return self.allow_reverse
+    
     def set_field_centric(self, value):
         if value:
             self.navx.reset()
@@ -43,6 +54,15 @@ class SwerveDrive:
         
     def is_field_centric(self):
         return self.field_centric
+    
+    def set_debugging(self, value):
+        self.debugging = value
+        
+        for module in self.modules:
+            module.set_debugging(self.debugging)
+            
+    def is_debugging(self):
+        return self.debugging
 
     def move(self, fwd, strafe, rcw):
         '''
@@ -131,13 +151,19 @@ class SwerveDrive:
         '''
         self.sd.putNumber("drive/drive/GyroAngle", self.navx.yaw)
         self.sd.putBoolean("drive/drive/FieldCentric", self.field_centric)
+        self.sd.putBoolean("drive/drive/Allow Reverse", self.allow_reverse)
         
-        #self.sd.putNumber("drive/drive/MaxDriveSpeed", self.max_drive_speed)
-        
-        for i, angle in enumerate(self.module_angles):
-            self.sd.putNumber("drive/drive/ Angle %s" % i, angle)
-
         for module in self.modules:
             module.update_smartdash()
+            
+        
+        
+        if self.debugging:
+            for i, angle in enumerate(self.module_angles):
+                self.sd.putNumber("drive/drive/ Angle %s" % i, angle)
+                
+            #self.sd.putNumber("drive/drive/MaxDriveSpeed", self.max_drive_speed)
+
+        
 
 
