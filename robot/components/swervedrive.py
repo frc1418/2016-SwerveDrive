@@ -6,7 +6,7 @@ from robotpy_ext.common_drivers import navx
 
 class SwerveDrive:
 
-    def __init__(self, rr_module, rl_module, fr_module, fl_module, navx, gyroCalc = False, allow_reverse=False):
+    def __init__(self, rr_module, rl_module, fr_module, fl_module, navx, field_centric = False, allow_reverse = False):
         self.sd = NetworkTable.getTable('SmartDashboard')
 
         self.modules = [fr_module,fl_module,rl_module,rr_module]
@@ -14,6 +14,10 @@ class SwerveDrive:
         self.module_angles = [0,0,0,0]
         
         self.navx = navx
+        
+        self.field_centric = field_centric
+                
+        self.allow_reverse = allow_reverse
 
         self.set_chasis_deminsions(22.5, 18)
         
@@ -22,8 +26,7 @@ class SwerveDrive:
         
         self.rotation_multiplyer = self.sd.getAutoUpdateValue("drive/drive/RotationMultiplyer", 0.75)
         self.xy_multiplyer = self.sd.getAutoUpdateValue("drive/drive/XYMultiplyer", 1)
-        
-        self.allow_reverse = allow_reverse
+
 
     def set_chasis_deminsions(self, length, width):
         '''
@@ -43,6 +46,14 @@ class SwerveDrive:
         
     def get_allow_reverse(self, value):
         return self.allow_reverse
+    
+    def set_field_centric(self, value):
+        if value:
+            self.navx.reset()
+        self.field_centric = value
+        
+    def is_field_centric(self):
+        return self.field_centric
 
     def move(self, fwd, strafe, rcw):
         '''
@@ -54,6 +65,17 @@ class SwerveDrive:
         
         fwd *= self.xy_multiplyer.value
         rcw *= self.rotation_multiplyer.value
+        
+        if(self.field_centric):
+            theta = math.radians(360-self.navx.yaw)
+            
+            fwdX = fwd * math.cos(theta)
+            fwdY = (-fwd) * math.sin(theta) #TODO: verify and understand why fwd is neg
+            strafeX = strafe * math.cos(theta)
+            strafeY = strafe * math.sin(theta)
+            
+            fwd = fwdX + strafeY
+            strafe = fwdY + strafeX
 
         #Velocities per quadrant
         leftY = fwd - (rcw * (self.width / self.r))
@@ -118,7 +140,8 @@ class SwerveDrive:
         '''
         Pushes some interal variables for debugging.
         '''
-        self.sd.putNumber("drive/driveGyroAngle", self.navx.yaw)
+        self.sd.putNumber("drive/drive/GyroAngle", self.navx.yaw)
+        self.sd.putBoolean("drive/drive/FieldCentric", self.field_centric)
         
         #self.sd.putNumber("drive/drive/MaxDriveSpeed", self.max_drive_speed)
         
