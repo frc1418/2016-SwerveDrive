@@ -9,7 +9,7 @@ MAX_DEG = 360
 
 class SwerveModule:
 
-    def __init__(self, driveMotor, rotateMotor, encoderPort, SDPrefix="SwerveModule", zero=0.0, inverted=False, allow_reverse=False):
+    def __init__(self, driveMotor, rotateMotor, encoderPort, SDPrefix="SwerveModule", zero=0.0, inverted=False, allow_reverse=False, debugging=False):
         '''
         :param driveMotorPort: Motor object
         :param rotateMotorPort: Motor object
@@ -40,6 +40,7 @@ class SwerveModule:
         self.encoder_zero = zero
         
         self.allow_reverse = allow_reverse
+        self.debugging = debugging
 
     #TEST THIS MAY BE BROKEN (VOLT/4050)
     def get_degrees(self):
@@ -98,6 +99,9 @@ class SwerveModule:
         
     def set_allow_reverse(self, value):
         self.allow_reverse = value
+        
+    def set_debugging(self, value):
+        self.debugging = value
 
     def _set_deg(self, value):
         '''
@@ -139,11 +143,15 @@ class SwerveModule:
         '''
         Outputs a bunch on internal variables for debuging purposes.
         '''
-        self.sd.putNumber("drive/%s/ Requested Voltage" % self.sd_prefix, self.requested_voltage)
-        self.sd.putNumber("drive/%s/ Requested Speed" % self.sd_prefix, self.requested_speed)
-        self.sd.putNumber("drive/%s/ Voltage" % self.sd_prefix, self.encoder.getVoltage())
-        self.sd.putNumber("drive/%s/ Zero " % self.sd_prefix, self.encoder_zero)
-        self.sd.putNumber("drive/%s/ Degrees" % self.sd_prefix, self.get_degrees())
-
-        self.sd.putNumber("drive/%s/ PID GET" % self.sd_prefix, self.pid_controller.get())
-        #self.sd.putBoolean("drive/%s/ On Target" % self.sd_prefix, self.pid_controller.onTarget())
+        
+        self.sd.putNumber("drive/%s/Degrees" % self.sd_prefix, self.get_degrees())
+        
+        if self.debugging:
+            self.sd.putNumber("drive/%s/Requested Voltage" % self.sd_prefix, self.requested_voltage)
+            self.sd.putNumber("drive/%s/Requested Speed" % self.sd_prefix, self.requested_speed)
+            self.sd.putNumber("drive/%s/Voltage" % self.sd_prefix, self.encoder.getVoltage())
+            self.sd.putNumber("drive/%s/Zero" % self.sd_prefix, self.encoder_zero)
+    
+            self.sd.putNumber("drive/%s/PID" % self.sd_prefix, self.pid_controller.get())
+            
+            self.sd.putBoolean("drive/%s/Allow Reverse" % self.sd_prefix, self.allow_reverse)

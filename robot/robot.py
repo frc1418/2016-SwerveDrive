@@ -31,6 +31,8 @@ class MyRobot(wpilib.SampleRobot):
         
         #Operation Buttons
         self.field_centric_button = ButtonDebouncer(self.joystick1, 6)
+        self.allow_reverse_button = ButtonDebouncer(self.joystick1, 7)
+        self.debugging_button = ButtonDebouncer(self.joystick1, 10)
         
         #Creation of components list to iterate over during update phase
         self.components = {
@@ -52,6 +54,12 @@ class MyRobot(wpilib.SampleRobot):
 
             if self.field_centric_button.get():
                 self.drive.set_field_centric(not self.drive.is_field_centric())
+                
+            if self.allow_reverse_button.get():
+                self.drive.set_allow_reverse(not self.drive.is_allow_reverse())
+                
+            if self.debugging_button.get():
+                self.drive.set_debugging(not self.drive.is_debugging())
 
             #TODO: Fix up the turret code a bit
             if self.joystick1.getRawButton(4):
