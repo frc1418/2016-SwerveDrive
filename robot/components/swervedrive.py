@@ -18,6 +18,9 @@ class SwerveDrive:
         self.field_centric = field_centric
         self.allow_reverse = allow_reverse
         self.debugging = debugging
+        
+        self.lock_rotation = False
+        self.lock_rotation_axies = self.sd.getAutoUpdateValue("drive/drive/LockRotationAxies", 8);
 
         self.set_chasis_deminsions(22.5, 18)
         
@@ -63,7 +66,13 @@ class SwerveDrive:
             
     def is_debugging(self):
         return self.debugging
-
+    
+    def set_locking_rotation(self, boolean):
+        self.lock_rotation = boolean
+        
+    def is_locking_rotation(self):
+        return self.lock_rotation
+        
     def move(self, fwd, strafe, rcw):
         '''
         Calulates the speed and angle for each wheel given the requested movement
@@ -129,6 +138,20 @@ class SwerveDrive:
         if max_speed > self.lower_drive_tresh.value:     
             self.module_speeds = requested_module_speeds
             self.module_angles = requested_module_angles
+            
+        #Locks the wheels to certain intervals if locking is true
+        if self.lock_rotation:
+            interval = 360/self.lock_rotation_axies.value
+            half_interval = interval/2
+            
+            for i, angle in enumerate(self.module_angles):
+                remainder = angle % interval
+                
+                if remainder >= half_interval:
+                    self.module_angles[i] += interval - remainder
+                else:
+                    self.module_angles[i] -= remainder
+            
 
     def doit(self):
         '''
@@ -151,7 +174,8 @@ class SwerveDrive:
         '''
         self.sd.putNumber("drive/drive/GyroAngle", self.navx.yaw)
         self.sd.putBoolean("drive/drive/FieldCentric", self.field_centric)
-        self.sd.putBoolean("drive/drive/Allow Reverse", self.allow_reverse)
+        self.sd.putBoolean("drive/drive/AllowReverse", self.allow_reverse)
+        self.sd.putBoolean("drive/drive/AllowReverse", self.lock_rotation)
         
         for module in self.modules:
             module.update_smartdash()
