@@ -84,6 +84,24 @@ class SwerveDrive:
         fwd *= self.xy_multiplyer.value
         rcw *= self.rotation_multiplyer.value
         
+        #Locks the wheels to certain intervals if locking is true
+        if self.lock_rotation:
+            interval = 360/self.lock_rotation_axies.value
+            half_interval = interval/2
+            deg = math.degrees(math.atan2(fwd, strafe))
+            
+            #Corrects the degreee to one of 8 axies
+            remainder = deg % interval            
+            if remainder >= half_interval:
+                deg += interval - remainder
+            else:
+                deg -= remainder
+                
+            #Gets the fwd/strafe values out of the new deg
+            theta = math.radians(deg)
+            fwd = math.sin(deg)
+            strafe = math.cos(deg)
+        
         if(self.field_centric):
             theta = math.radians(360-self.navx.yaw)
             
@@ -138,19 +156,6 @@ class SwerveDrive:
         if max_speed > self.lower_drive_tresh.value:     
             self.module_speeds = requested_module_speeds
             self.module_angles = requested_module_angles
-            
-        #Locks the wheels to certain intervals if locking is true
-        if self.lock_rotation:
-            interval = 360/self.lock_rotation_axies.value
-            half_interval = interval/2
-            
-            for i, angle in enumerate(self.module_angles):
-                remainder = angle % interval
-                
-                if remainder >= half_interval:
-                    self.module_angles[i] += interval - remainder
-                else:
-                    self.module_angles[i] -= remainder
             
 
     def doit(self):
