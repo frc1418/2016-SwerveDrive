@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import wpilib
 from networktables import NetworkTable
 
@@ -33,7 +35,6 @@ class MyRobot(wpilib.SampleRobot):
         self.field_centric_button = ButtonDebouncer(self.joystick1, 6)
         self.allow_reverse_button = ButtonDebouncer(self.joystick1, 7)
         self.debugging_button = ButtonDebouncer(self.joystick1, 10)
-        self.lock_angles_button = ButtonDebouncer(self.joystick1, 1)
         
         #Creation of components list to iterate over during update phase
         self.components = {
@@ -63,7 +64,7 @@ class MyRobot(wpilib.SampleRobot):
             if self.debugging_button.get():
                 self.drive.set_debugging(not self.drive.is_debugging())
                 
-            if self.lock_angles_button.get():
+            if self.joystick1.getRawButton(1):
                 self.drive.set_locking_rotation(True)
             else:
                 self.drive.set_locking_rotation(False)

@@ -25,7 +25,7 @@ class SwerveDrive:
         self.set_chasis_deminsions(22.5, 18)
         
         self.max_drive_speed = self.sd.getAutoUpdateValue("drive/drive/MaxDriveSpeed", 1)
-        self.lower_drive_tresh = self.sd.getAutoUpdateValue("drive/drive/LowDriveThresh", 0.1)
+        self.lower_input_tresh = self.sd.getAutoUpdateValue("drive/drive/LowDriveThresh", 0.1)
         
         self.rotation_multiplyer = self.sd.getAutoUpdateValue("drive/drive/RotationMultiplyer", 0.75)
         self.xy_multiplyer = self.sd.getAutoUpdateValue("drive/drive/XYMultiplyer", 1)
@@ -84,6 +84,10 @@ class SwerveDrive:
         fwd *= self.xy_multiplyer.value
         rcw *= self.rotation_multiplyer.value
         
+        #Does nothing if the values are lower than the input thresh
+        if fwd < self.lower_input_tresh.value and strafe < self.lower_input_tresh.value and rcw < self.lower_input_tresh.value:
+            return
+        
         #Locks the wheels to certain intervals if locking is true
         if self.lock_rotation:
             interval = 360/self.lock_rotation_axies.value
@@ -99,8 +103,8 @@ class SwerveDrive:
                 
             #Gets the fwd/strafe values out of the new deg
             theta = math.radians(deg)
-            fwd = math.sin(deg)
-            strafe = math.cos(deg)
+            fwd = math.sin(theta)
+            strafe = math.cos(theta)
         
         if(self.field_centric):
             theta = math.radians(360-self.navx.yaw)
@@ -151,12 +155,9 @@ class SwerveDrive:
             
             for i, speed in enumerate(requested_module_speeds):
                 requested_module_speeds[i] = speed * precent_held
-            
-        #Only puts values is the max speed is over the drive thresh. Used to elminate unneeded wheel movement   
-        if max_speed > self.lower_drive_tresh.value:     
-            self.module_speeds = requested_module_speeds
-            self.module_angles = requested_module_angles
-            
+        
+        self.module_speeds = requested_module_speeds
+        self.module_angles = requested_module_angles
 
     def doit(self):
         '''
@@ -180,7 +181,7 @@ class SwerveDrive:
         self.sd.putNumber("drive/drive/GyroAngle", self.navx.yaw)
         self.sd.putBoolean("drive/drive/FieldCentric", self.field_centric)
         self.sd.putBoolean("drive/drive/AllowReverse", self.allow_reverse)
-        self.sd.putBoolean("drive/drive/AllowReverse", self.lock_rotation)
+        self.sd.putBoolean("drive/drive/LockRotation", self.lock_rotation)
         
         for module in self.modules:
             module.update_smartdash()
