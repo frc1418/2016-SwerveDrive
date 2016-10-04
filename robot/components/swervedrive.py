@@ -25,7 +25,7 @@ class SwerveDrive:
         self.set_chasis_deminsions(22.5, 18)
         
         self.max_drive_speed = self.sd.getAutoUpdateValue("drive/drive/MaxDriveSpeed", 1)
-        self.lower_input_tresh = self.sd.getAutoUpdateValue("drive/drive/LowDriveThresh", 0.1)
+        self.lower_input_thresh = self.sd.getAutoUpdateValue("drive/drive/LowDriveThresh", 0.1)
         
         self.rotation_multiplyer = self.sd.getAutoUpdateValue("drive/drive/RotationMultiplyer", 0.75)
         self.xy_multiplyer = self.sd.getAutoUpdateValue("drive/drive/XYMultiplyer", 1)
@@ -85,14 +85,22 @@ class SwerveDrive:
         rcw *= self.rotation_multiplyer.value
         
         #Does nothing if the values are lower than the input thresh
-        if fwd < self.lower_input_tresh.value and strafe < self.lower_input_tresh.value and rcw < self.lower_input_tresh.value:
+        if (abs(fwd) < self.lower_input_thresh.value) and (abs(strafe) < self.lower_input_thresh.value) and (abs(rcw) < self.lower_input_thresh.value):
+            self.module_speeds = [0,0,0,0]
+            
             return
+        
         
         #Locks the wheels to certain intervals if locking is true
         if self.lock_rotation:
             interval = 360/self.lock_rotation_axies.value
             half_interval = interval/2
-            deg = math.degrees(math.atan2(fwd, strafe))
+            
+            #Caclulates the radius (speed) from the give x and y
+            r = math.sqrt((fwd ** 2) + (strafe ** 2))
+            
+            #Gets the degree from the given x and y
+            deg = math.degrees(math.atan2(fwd, strafe)) 
             
             #Corrects the degreee to one of 8 axies
             remainder = deg % interval            
@@ -103,8 +111,9 @@ class SwerveDrive:
                 
             #Gets the fwd/strafe values out of the new deg
             theta = math.radians(deg)
-            fwd = math.sin(theta)
-            strafe = math.cos(theta)
+            fwd = math.sin(theta)*r
+            strafe = math.cos(theta)*r
+            
         
         if(self.field_centric):
             theta = math.radians(360-self.navx.yaw)
