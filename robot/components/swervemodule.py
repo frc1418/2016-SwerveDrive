@@ -42,14 +42,18 @@ class SwerveModule:
         self.allow_reverse = allow_reverse
         self.debugging = debugging
 
-    #TEST THIS MAY BE BROKEN (VOLT/4050)
-    def get_degrees(self):
+    def get_voltage(self):
+        return self.encoder.getVoltage() - self.encoder_zero
+    
+    @staticmethod
+    def voltage_to_degrees(voltage):
         '''
-        serves to convert the current voltage from the encoder to degrees
+        Converts a given voltage value to degrees
+
+        :param voltage: a voltage value between 0 and 5
         '''
 
-        volt =  (self.encoder.getVoltage() - self.encoder_zero)
-        deg = (volt/5)*360
+        deg = (voltage/5)*360
         deg = deg
 
         if deg < 0:
@@ -58,37 +62,34 @@ class SwerveModule:
         return deg
 
     @staticmethod
-    def tick_to_deg(tick):
+    def voltage_to_tick(voltage):
         '''
-        Converts a given tick value to degrees
+        Converts a given voltage value to tick
 
-        :param tick: a tick value between 0 and 4050
+        :param voltage: a voltage value between 0 and 5
         '''
 
-        deg = (tick/4050)*360
-        return deg
+        return (voltage/5)*4050
 
     @staticmethod
-    def deg_to_voltage(deg):
+    def degree_to_voltage(degree):
         '''
         Converts a given degree to voltage
 
-        :param deg: a degree value between 0 and 360
+        :param degree: a degree value between 0 and 360
         '''
 
-        volt = (deg/360)*5
-        return volt
-
+        return (degree/360)*5
+    
     @staticmethod
-    def deg_to_tick(deg):
+    def tick_to_voltage(tick):
         '''
-        Converts a given deg to a tick value
+        Converts a given tick to voltage
 
-        :param deg: a degree value between 0 and 360
+        :param tick: a tick value between 0 and 4050
         '''
-
-        volt = (deg/360)*4050
-        return volt
+        
+        return (tick/4050)*5
 
     def zero_encoder(self):
         '''
@@ -109,7 +110,7 @@ class SwerveModule:
         Ment to be used only by the move function.
         '''
         self.sd.putNumber('drive/%s/ Requested D' % self.sd_prefix, value)
-        self.requested_voltage = ((self.deg_to_voltage(value)+self.encoder_zero) % 5)
+        self.requested_voltage = ((self.degree_to_voltage(value)+self.encoder_zero) % 5)
 
     def move(self, speed, deg):
         '''
@@ -119,7 +120,7 @@ class SwerveModule:
         deg = deg % 360 #Prevents values past 360
         
         if self.allow_reverse:
-            if abs(deg - self.get_degrees()) > 90:
+            if abs( deg - self.voltage_to_degrees(self.get_voltage()) ) > 90:
                 speed *= -1
                 deg += 180
                 
@@ -144,7 +145,7 @@ class SwerveModule:
         Outputs a bunch on internal variables for debuging purposes.
         '''
         
-        self.sd.putNumber("drive/%s/Degrees" % self.sd_prefix, self.get_degrees())
+        self.sd.putNumber("drive/%s/Degrees" % self.sd_prefix, self.voltage_to_degrees(self.get_voltage()))
         
         if self.debugging:
             self.sd.putNumber("drive/%s/Requested Voltage" % self.sd_prefix, self.requested_voltage)
