@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import wpilib
 from networktables import NetworkTable
 
@@ -17,8 +19,8 @@ class MyRobot(wpilib.SampleRobot):
 
         self.turret_motor = wpilib.Talon(8)
 
-        self.joystick1 = wpilib.Joystick(1)
-        self.joystick2 = wpilib.Joystick(0)
+        self.joystick1 = wpilib.Joystick(0)
+        self.joystick2 = wpilib.Joystick(1)
 
         #Initalization of each indvidual wheel module FORMAT:(driveMotor, rotateMotor, encoderPort, Prefix for SmartDash vars, inverted)
         self.rr_module = SwerveModule(wpilib.VictorSP(2),wpilib.Talon(3),3, SDPrefix="RR Module", zero=3.25, inverted=True)
@@ -52,6 +54,7 @@ class MyRobot(wpilib.SampleRobot):
             #Passing joystick axis values to drive function
             self.drive.move(self.joystick1.getAxis(1)*-1, self.joystick1.getAxis(0)*-1, self.joystick2.getAxis(0)*-1)
 
+            #Operation Buttons
             if self.field_centric_button.get():
                 self.drive.set_field_centric(not self.drive.is_field_centric())
                 
@@ -60,6 +63,11 @@ class MyRobot(wpilib.SampleRobot):
                 
             if self.debugging_button.get():
                 self.drive.set_debugging(not self.drive.is_debugging())
+                
+            if self.joystick1.getRawButton(1):
+                self.drive.set_locking_rotation(True)
+            else:
+                self.drive.set_locking_rotation(False)
 
             #TODO: Fix up the turret code a bit
             if self.joystick1.getRawButton(4):

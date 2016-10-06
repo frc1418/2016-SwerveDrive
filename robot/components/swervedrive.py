@@ -18,11 +18,14 @@ class SwerveDrive:
         self.field_centric = field_centric
         self.allow_reverse = allow_reverse
         self.debugging = debugging
+        
+        self.lock_rotation = False
+        self.lock_rotation_axies = self.sd.getAutoUpdateValue("drive/drive/LockRotationAxies", 8);
 
         self.set_chasis_deminsions(22.5, 18)
         
         self.max_drive_speed = self.sd.getAutoUpdateValue("drive/drive/MaxDriveSpeed", 1)
-        self.lower_drive_tresh = self.sd.getAutoUpdateValue("drive/drive/LowDriveThresh", 0.1)
+        self.lower_input_thresh = self.sd.getAutoUpdateValue("drive/drive/LowDriveThresh", 0.1)
         
         self.rotation_multiplyer = self.sd.getAutoUpdateValue("drive/drive/RotationMultiplyer", 0.75)
         self.xy_multiplyer = self.sd.getAutoUpdateValue("drive/drive/XYMultiplyer", 1)
@@ -63,7 +66,13 @@ class SwerveDrive:
             
     def is_debugging(self):
         return self.debugging
-
+    
+    def set_locking_rotation(self, boolean):
+        self.lock_rotation = boolean
+        
+    def is_locking_rotation(self):
+        return self.lock_rotation
+        
     def move(self, fwd, strafe, rcw):
         '''
         Calulates the speed and angle for each wheel given the requested movement
@@ -74,6 +83,37 @@ class SwerveDrive:
         
         fwd *= self.xy_multiplyer.value
         rcw *= self.rotation_multiplyer.value
+        
+        #Does nothing if the values are lower than the input thresh
+        if (abs(fwd) < self.lower_input_thresh.value) and (abs(strafe) < self.lower_input_thresh.value) and (abs(rcw) < self.lower_input_thresh.value):
+            self.module_speeds = [0,0,0,0]
+            
+            return
+        
+        
+        #Locks the wheels to certain intervals if locking is true
+        if self.lock_rotation:
+            interval = 360/self.lock_rotation_axies.value
+            half_interval = interval/2
+            
+            #Caclulates the radius (speed) from the give x and y
+            r = math.sqrt((fwd ** 2) + (strafe ** 2))
+            
+            #Gets the degree from the given x and y
+            deg = math.degrees(math.atan2(fwd, strafe)) 
+            
+            #Corrects the degreee to one of 8 axies
+            remainder = deg % interval            
+            if remainder >= half_interval:
+                deg += interval - remainder
+            else:
+                deg -= remainder
+                
+            #Gets the fwd/strafe values out of the new deg
+            theta = math.radians(deg)
+            fwd = math.sin(theta)*r
+            strafe = math.cos(theta)*r
+            
         
         if(self.field_centric):
             theta = math.radians(360-self.navx.yaw)
@@ -124,11 +164,9 @@ class SwerveDrive:
             
             for i, speed in enumerate(requested_module_speeds):
                 requested_module_speeds[i] = speed * precent_held
-            
-        #Only puts values is the max speed is over the drive thresh. Used to elminate unneeded wheel movement   
-        if max_speed > self.lower_drive_tresh.value:     
-            self.module_speeds = requested_module_speeds
-            self.module_angles = requested_module_angles
+        
+        self.module_speeds = requested_module_speeds
+        self.module_angles = requested_module_angles
 
     def doit(self):
         '''
@@ -151,7 +189,8 @@ class SwerveDrive:
         '''
         self.sd.putNumber("drive/drive/GyroAngle", self.navx.yaw)
         self.sd.putBoolean("drive/drive/FieldCentric", self.field_centric)
-        self.sd.putBoolean("drive/drive/Allow Reverse", self.allow_reverse)
+        self.sd.putBoolean("drive/drive/AllowReverse", self.allow_reverse)
+        self.sd.putBoolean("drive/drive/LockRotation", self.lock_rotation)
         
         for module in self.modules:
             module.update_smartdash()
