@@ -19,8 +19,8 @@ class MyRobot(wpilib.SampleRobot):
 
         self.turret_motor = wpilib.Talon(8)
 
-        self.joystick1 = wpilib.Joystick(1)
-        self.joystick2 = wpilib.Joystick(0)
+        self.joystick1 = wpilib.Joystick(0)
+        self.joystick2 = wpilib.Joystick(1)
 
         #Initalization of each indvidual wheel module FORMAT:(driveMotor, rotateMotor, encoderPort, Prefix for SmartDash vars, inverted)
         self.rr_module = SwerveModule(wpilib.VictorSP(2),wpilib.Talon(3),3, SDPrefix="RR Module", zero=3.25, inverted=True)
