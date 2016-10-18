@@ -24,7 +24,6 @@ class SwerveDrive:
 
         self.set_chasis_deminsions(22.5, 18)
         
-        self.max_drive_speed = self.sd.getAutoUpdateValue("drive/drive/MaxDriveSpeed", 1)
         self.lower_input_thresh = self.sd.getAutoUpdateValue("drive/drive/LowDriveThresh", 0.1)
         
         self.rotation_multiplyer = self.sd.getAutoUpdateValue("drive/drive/RotationMultiplyer", 0.75)
@@ -82,6 +81,7 @@ class SwerveDrive:
         '''
         
         fwd *= self.xy_multiplyer.value
+        strafe *= self.xy_multiplyer.value
         rcw *= self.rotation_multiplyer.value
         
         #Does nothing if the values are lower than the input thresh
