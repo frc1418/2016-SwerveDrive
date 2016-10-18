@@ -85,11 +85,14 @@ class SwerveDrive:
         rcw *= self.rotation_multiplyer.value
         
         #Does nothing if the values are lower than the input thresh
-        if (abs(fwd) < self.lower_input_thresh.value) and (abs(strafe) < self.lower_input_thresh.value) and (abs(rcw) < self.lower_input_thresh.value):
-            self.module_speeds = [0,0,0,0]
-            
-            return
+        if abs(fwd) < self.lower_input_thresh.value:
+           fwd = 0;
         
+        if abs(strafe) < self.lower_input_thresh.value:
+            strafe = 0;
+        
+        if abs(rcw) < self.lower_input_thresh.value:
+            rcw = 0;
         
         #Locks the wheels to certain intervals if locking is true
         if self.lock_rotation:
