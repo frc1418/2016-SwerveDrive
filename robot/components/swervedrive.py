@@ -24,7 +24,6 @@ class SwerveDrive:
 
         self.set_chasis_deminsions(22.5, 18)
         
-        self.max_drive_speed = self.sd.getAutoUpdateValue("drive/drive/MaxDriveSpeed", 1)
         self.lower_input_thresh = self.sd.getAutoUpdateValue("drive/drive/LowDriveThresh", 0.1)
         
         self.rotation_multiplyer = self.sd.getAutoUpdateValue("drive/drive/RotationMultiplyer", 0.75)
@@ -39,7 +38,7 @@ class SwerveDrive:
         self.length = length
         self.width = width
 
-        self.r = math.sqrt((self.length * self.length)+(self.width + self.width))
+        self.r = math.sqrt((self.length * self.length)+(self.width * self.width))
 
     def set_allow_reverse(self, value):
         self.allow_reverse = value
@@ -82,14 +81,18 @@ class SwerveDrive:
         '''
         
         fwd *= self.xy_multiplyer.value
+        strafe *= self.xy_multiplyer.value
         rcw *= self.rotation_multiplyer.value
         
         #Does nothing if the values are lower than the input thresh
-        if (abs(fwd) < self.lower_input_thresh.value) and (abs(strafe) < self.lower_input_thresh.value) and (abs(rcw) < self.lower_input_thresh.value):
-            self.module_speeds = [0,0,0,0]
-            
-            return
+        if abs(fwd) < self.lower_input_thresh.value:
+           fwd = 0;
         
+        if abs(strafe) < self.lower_input_thresh.value:
+            strafe = 0;
+        
+        if abs(rcw) < self.lower_input_thresh.value:
+            rcw = 0;
         
         #Locks the wheels to certain intervals if locking is true
         if self.lock_rotation:
@@ -148,22 +151,11 @@ class SwerveDrive:
         #Assigns the speeds and angles in lists. MUST BE IN THIS ORDER
         requested_module_speeds = [fr_speed, fl_speed, rl_speed, rr_speed]
         requested_module_angles = [fr_angle, fl_angle, rl_angle, rr_angle]
-
-        #Finds the current max speed
-        max_speed = 0
-        for speed in requested_module_speeds:
-            if speed > max_speed:
-                max_speed = speed
         
-        #Normalises values if any speed is greater then the max   
-        if max_speed > self.max_drive_speed.value:
-            precent_over = (max_speed-self.max_drive_speed.value)/max_speed
-            precent_held = 1-precent_over
-            
-            max_speed *= precent_held
-            
-            for i, speed in enumerate(requested_module_speeds):
-                requested_module_speeds[i] = speed * precent_held
+        maxMagnitude = max(abs(x) for x in requested_module_speeds)
+        if maxMagnitude > 1.0:
+            for i in range(len(requested_module_speeds)):
+                requested_module_speeds[i] = requested_module_speeds[i] / maxMagnitude
         
         self.module_speeds = requested_module_speeds
         self.module_angles = requested_module_angles
