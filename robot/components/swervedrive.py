@@ -100,6 +100,13 @@ class SwerveDrive:
             
         return input
     
+    @staticmethod
+    def normalize(data):
+        maxMagnitude = max(abs(x) for x in data)
+        if maxMagnitude > 1.0:
+            for i in range(len(data)):
+                data[i] = data[i] / maxMagnitude
+    
     def move(self, fwd, strafe, rcw):
         '''
         Calulates the speed and angle for each wheel given the requested movement
@@ -112,6 +119,8 @@ class SwerveDrive:
             fwd = self.square_input(fwd)
             strafe = self.square_input(strafe)
             rcw = self.square_input(rcw)
+            
+            fwd, strafe, rcw = self.normalize([fwd, strafe, rcw])
         
         fwd *= self.xy_multiplyer.value
         strafe *= self.xy_multiplyer.value
@@ -185,10 +194,7 @@ class SwerveDrive:
         requested_module_speeds = [fr_speed, fl_speed, rl_speed, rr_speed]
         requested_module_angles = [fr_angle, fl_angle, rl_angle, rr_angle]
         
-        maxMagnitude = max(abs(x) for x in requested_module_speeds)
-        if maxMagnitude > 1.0:
-            for i in range(len(requested_module_speeds)):
-                requested_module_speeds[i] = requested_module_speeds[i] / maxMagnitude
+        requested_module_speeds = self.normalize(requested_module_speeds)
         
         self.module_speeds = requested_module_speeds
         self.module_angles = requested_module_angles
