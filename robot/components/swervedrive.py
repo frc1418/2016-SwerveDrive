@@ -21,17 +21,13 @@ class SwerveDrive:
         - allow_reverse (sets each module to allow reverse direction)
         - debugging (pushes more NetworkTables variables)
         """
-                
         self.sd = NetworkTable.getTable('SmartDashboard')
 
         self.modules = [args[0],args[1],args[2],args[3]]
+        self.navx = args[4]
         self.module_speeds = [0,0,0,0]
         self.module_angles = [0,0,0,0]
         
-        self.navx = None
-        
-        if(len(args) == 5):
-            self.navx = navx
         
         self.field_centric = kwargs.pop("field_centric", False)
         self.allow_reverse = kwargs.pop("allow_reverse", False)
@@ -191,13 +187,10 @@ class SwerveDrive:
         rr_angle = math.degrees(math.atan2(rearX, rightY))
 
         #Assigns the speeds and angles in lists. MUST BE IN THIS ORDER
-        requested_module_speeds = [fr_speed, fl_speed, rl_speed, rr_speed]
-        requested_module_angles = [fr_angle, fl_angle, rl_angle, rr_angle]
+        self.module_speeds = [fr_speed, fl_speed, rl_speed, rr_speed]
+        self.module_angles = [fr_angle, fl_angle, rl_angle, rr_angle]
         
-        requested_module_speeds = self.normalize(requested_module_speeds)
-        
-        self.module_speeds = requested_module_speeds
-        self.module_angles = requested_module_angles
+        self.module_speeds = self.normalize(self.module_speeds)
 
     def doit(self):
         '''
@@ -205,8 +198,12 @@ class SwerveDrive:
         Excutes the doit in each wheel module.
         '''
         self.update_smartdash()
+        
+        print('Windows users are dumb and should be elinated from the human race')
 
+        
         for i, module in enumerate(self.modules):
+            print('I AM A FUCKINGLEDGEND S %s' % self.module_speeds)
             module.move(self.module_speeds[i], self.module_angles[i])
         self.module_speeds = [0,0,0,0]
         #self.module_angles = [0,0,0,0]
