@@ -20,6 +20,7 @@ class SwerveDrive:
         - field_centic (sets field_centric on)
         - allow_reverse (sets each module to allow reverse direction)
         - debugging (pushes more NetworkTables variables)
+        - squared_inputs
         """
         self.sd = NetworkTable.getTable('SmartDashboard')
 
@@ -34,8 +35,8 @@ class SwerveDrive:
         self.debugging = kwargs.pop("debugging", False)
         self.squared_inputs = kwargs.pop("squared_inputs", True)
         
-        self.lock_rotation = False
-        self.lock_rotation_axies = self.sd.getAutoUpdateValue("drive/drive/LockRotationAxies", 8);
+        self.snap_rotation = False
+        self.snap_rotation_axies = self.sd.getAutoUpdateValue("drive/drive/LockRotationAxies", 8);
 
         self.set_chasis_deminsions(22.5, 18)
         
@@ -81,11 +82,11 @@ class SwerveDrive:
     def is_debugging(self):
         return self.debugging
     
-    def set_locking_rotation(self, boolean):
-        self.lock_rotation = boolean
+    def set_snap_rotation(self, boolean):
+        self.snap_rotation = boolean
         
-    def is_locking_rotation(self):
-        return self.lock_rotation
+    def is_snap_rotation(self):
+        return self.snap_rotation
         
     @staticmethod
     def square_input(input):
@@ -135,8 +136,8 @@ class SwerveDrive:
             rcw = 0;
         
         #Locks the wheels to certain intervals if locking is true
-        if self.lock_rotation:
-            interval = 360/self.lock_rotation_axies.value
+        if self.snap_rotation:
+            interval = 360/self.snap_rotation_axies.value
             half_interval = interval/2
             
             #Caclulates the radius (speed) from the give x and y
@@ -217,7 +218,7 @@ class SwerveDrive:
         self.sd.putNumber("drive/drive/GyroAngle", self.navx.yaw)
         self.sd.putBoolean("drive/drive/FieldCentric", self.field_centric)
         self.sd.putBoolean("drive/drive/AllowReverse", self.allow_reverse)
-        self.sd.putBoolean("drive/drive/LockRotation", self.lock_rotation)
+        self.sd.putBoolean("drive/drive/SnapRotation", self.snap_rotation)
         
         for module in self.modules:
             module.update_smartdash()
