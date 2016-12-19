@@ -24,7 +24,8 @@ class SwerveDrive:
         """
         self.sd = NetworkTable.getTable('SmartDashboard')
 
-        self.modules = [args[0],args[1],args[2],args[3]]
+        self.modules = [args[2],args[3],args[1],args[0]]
+        #self.module_speeds = [fr_speed, fl_speed, rl_speed, rr_speed]
         self.navx = args[4]
         self.module_speeds = [0,0,0,0]
         self.module_angles = [0,0,0,0]
