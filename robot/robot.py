@@ -65,9 +65,9 @@ class MyRobot(wpilib.SampleRobot):
                 self.drive.set_debugging(not self.drive.is_debugging())
                 
             if self.joystick1.getRawButton(1):
-                self.drive.set_locking_rotation(True)
+                self.drive.set_snap_rotation(True)
             else:
-                self.drive.set_locking_rotation(False)
+                self.drive.set_snap_rotation(False)
 
             #TODO: Fix up the turret code a bit
             if self.joystick1.getRawButton(4):
