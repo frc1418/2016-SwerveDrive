@@ -30,9 +30,9 @@ class SwerveDrive:
         
         
         self.field_centric = kwargs.pop("field_centric", False)
-        self.allow_reverse = kwargs.pop("allow_reverse", False)
+        self.allow_reverse = kwargs.pop("allow_reverse", True)
         self.debugging = kwargs.pop("debugging", False)
-        self.squared_inputs = kwargs.pop("squared_inputs", False)
+        self.squared_inputs = kwargs.pop("squared_inputs", True)
         
         self.lock_rotation = False
         self.lock_rotation_axies = self.sd.getAutoUpdateValue("drive/drive/LockRotationAxies", 8);
@@ -102,6 +102,8 @@ class SwerveDrive:
         if maxMagnitude > 1.0:
             for i in range(len(data)):
                 data[i] = data[i] / maxMagnitude
+                
+        return data
     
     def move(self, fwd, strafe, rcw):
         '''
@@ -190,6 +192,7 @@ class SwerveDrive:
         self.module_speeds = [fr_speed, fl_speed, rl_speed, rr_speed]
         self.module_angles = [fr_angle, fl_angle, rl_angle, rr_angle]
         
+        
         self.module_speeds = self.normalize(self.module_speeds)
 
     def doit(self):
@@ -199,11 +202,7 @@ class SwerveDrive:
         '''
         self.update_smartdash()
         
-        print('Windows users are dumb and should be elinated from the human race')
-
-        
         for i, module in enumerate(self.modules):
-            print('I AM A FUCKINGLEDGEND S %s' % self.module_speeds)
             module.move(self.module_speeds[i], self.module_angles[i])
         self.module_speeds = [0,0,0,0]
         #self.module_angles = [0,0,0,0]
