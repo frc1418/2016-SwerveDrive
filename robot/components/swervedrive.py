@@ -126,16 +126,6 @@ class SwerveDrive:
         strafe *= self.xy_multiplyer.value
         rcw *= self.rotation_multiplyer.value
         
-        #Does nothing if the values are lower than the input thresh
-        if abs(fwd) < self.lower_input_thresh.value:
-           fwd = 0;
-        
-        if abs(strafe) < self.lower_input_thresh.value:
-            strafe = 0;
-        
-        if abs(rcw) < self.lower_input_thresh.value:
-            rcw = 0;
-        
         #Locks the wheels to certain intervals if locking is true
         if self.snap_rotation:
             interval = 360/self.snap_rotation_axies.value
@@ -170,6 +160,19 @@ class SwerveDrive:
             
             fwd = fwdX + strafeY
             strafe = fwdY + strafeX
+            
+        #Does nothing if the values are lower than the input thresh
+        if abs(fwd) < self.lower_input_thresh.value:
+           fwd = 0;
+        
+        if abs(strafe) < self.lower_input_thresh.value:
+            strafe = 0;
+        
+        if abs(rcw) < self.lower_input_thresh.value:
+            rcw = 0;
+            
+        if rcw == 0 and strafe == 0 and fwd == 0: #Prevents a useless loop.
+            return
 
         #Velocities per quadrant
         leftY = fwd - (rcw * (self.width / self.r))
